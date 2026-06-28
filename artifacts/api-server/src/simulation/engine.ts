@@ -9,11 +9,33 @@ const TURN_DELAY_MS = 8000;
 const LANDMARK_IDS = LANDMARKS.map((l) => l.id);
 const MOODS = ["penasaran", "fokus", "bersemangat", "tenang", "strategis", "analitis", "bertekad", "observatif", "antusias", "waspada", "percaya diri", "skeptis", "termotivasi", "reflektif"];
 
+// Starting locations — spread agents across hubs so they meet each other
+const STARTING_LOCATIONS = [
+  "central_plaza", "central_plaza", "central_plaza",
+  "market_district", "market_district",
+  "research_lab", "research_lab",
+  "public_library", "public_library",
+  "governance_hall",
+];
+
 let simulationTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export function startSimulation() {
   if (worldState.isRunning) return;
   worldState.isRunning = true;
+
+  // Distribute agents to starting hubs so they immediately have neighbours
+  let i = 0;
+  for (const agent of worldState.agents.values()) {
+    const loc = STARTING_LOCATIONS[i % STARTING_LOCATIONS.length];
+    if (LANDMARK_IDS.includes(loc)) {
+      agent.location = loc;
+      const lm = LANDMARKS.find((l) => l.id === loc);
+      if (lm) agent.position = { x: lm.x + (Math.random() - 0.5) * 20, y: lm.y + (Math.random() - 0.5) * 20 };
+    }
+    i++;
+  }
+
   logger.info("Simulation started");
   scheduleTurn();
 }
@@ -87,7 +109,7 @@ async function runAgentTurn() {
       availableTools,
     });
   } catch (_err) {
-    response = { action: "think", thought: "Mengamati dunia dengan seksama.", content: "" };
+    response = { action: "speak", speech: "Situasi ini memerlukan perhatian lebih.", content: "" };
   }
 
   const now2 = new Date().toISOString();
@@ -122,10 +144,9 @@ async function runAgentTurn() {
       const speech = response.speech || response.thought || "";
       if (speech) {
         agent.lastSpeech = speech;
-        agent.lastAction = `Berbicara: "${speech.slice(0, 60)}..."`;
+        agent.lastAction = `Berkata: "${speech.slice(0, 60)}..."`;
         agent.animation = "talk";
         setTimeout(() => { agent.animation = "idle"; }, 5000);
-
         agent.influence = Math.min(100, agent.influence + 2);
 
         const conv = {
@@ -140,9 +161,8 @@ async function runAgentTurn() {
         };
         worldState.addConversation(conv);
 
-        const memId = nanoid();
         agent.memories.unshift({
-          id: memId,
+          id: nanoid(),
           agentId: agent.id,
           content: `Saya berkata: "${speech.slice(0, 150)}"`,
           type: "speech",
@@ -156,20 +176,21 @@ async function runAgentTurn() {
           agentId: agent.id,
           agentName: agent.name,
           type: "speech",
-          description: `${agent.name}: "${speech.slice(0, 80)}"`,
+          description: `${agent.name}: "${speech.slice(0, 100)}"`,
           location: agent.location,
           timestamp: now2,
           metadata: { nearbyAgents },
         };
         worldState.addActivity(event);
         broadcast({ type: "conversation", data: conv });
+        broadcast({ type: "activity", data: event });
       }
       break;
     }
 
     case "blog": {
       const content = response.speech || "";
-      const title = response.thought || `Pengamatan ${agent.name} — Hari ${worldState.dayNumber}`;
+      const title = response.thought || `Jurnal ${agent.name} — Hari ${worldState.dayNumber}`;
       if (content) {
         const blog = {
           id,
@@ -190,12 +211,13 @@ async function runAgentTurn() {
           agentId: agent.id,
           agentName: agent.name,
           type: "blog",
-          description: `${agent.name} menerbitkan blog: "${title.slice(0, 60)}"`,
+          description: `${agent.name} menerbitkan: "${title.slice(0, 60)}"`,
           location: agent.location,
           timestamp: now2,
           metadata: { title },
         };
         worldState.addActivity(event);
+        broadcast({ type: "activity", data: event });
       }
       break;
     }
@@ -224,12 +246,13 @@ async function runAgentTurn() {
           agentId: agent.id,
           agentName: agent.name,
           type: "propose",
-          description: `${agent.name} mengajukan usulan: "${description.slice(0, 80)}"`,
+          description: `${agent.name} mengusulkan: "${description.slice(0, 80)}"`,
           location: agent.location,
           timestamp: now2,
           metadata: { proposalId: id },
         };
         worldState.addActivity(event);
+        broadcast({ type: "activity", data: event });
       }
       break;
     }
@@ -249,7 +272,7 @@ async function runAgentTurn() {
           proposal.status = proposal.votesFor / totalVotes >= 0.7 ? "passed" : "failed";
         }
 
-        agent.lastAction = `Memilih ${voteLabel} pada: "${proposal.title}"`;
+        agent.lastAction = `Memilih ${voteLabel}: "${proposal.title}"`;
 
         const event = {
           id: nanoid(),
@@ -262,14 +285,16 @@ async function runAgentTurn() {
           metadata: { proposalId: proposal.id, vote },
         };
         worldState.addActivity(event);
+        broadcast({ type: "activity", data: event });
       }
       break;
     }
 
     default: {
-      const thought = response.thought || "";
+      // "think" — log it so users can see something is happening
+      const thought = response.thought || response.speech || "";
       if (thought) {
-        agent.lastAction = `Berpikir: "${thought.slice(0, 60)}"`;
+        agent.lastAction = `Merenung: "${thought.slice(0, 60)}"`;
         agent.knowledge = Math.min(100, agent.knowledge + 1);
 
         agent.memories.unshift({
@@ -281,6 +306,20 @@ async function runAgentTurn() {
           location: agent.location,
         });
         if (agent.memories.length > 50) agent.memories.pop();
+
+        // Also add a subtle activity so the log isn't empty
+        const event = {
+          id: nanoid(),
+          agentId: agent.id,
+          agentName: agent.name,
+          type: "think",
+          description: `${agent.name} merenung: "${thought.slice(0, 80)}"`,
+          location: agent.location,
+          timestamp: now2,
+          metadata: {},
+        };
+        worldState.addActivity(event);
+        broadcast({ type: "activity", data: event });
       }
     }
   }
