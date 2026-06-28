@@ -63,49 +63,51 @@ export async function generateAgentTurn(context: {
   recentConversations: string[];
   availableTools: string[];
 }): Promise<LLMResponse> {
-  const systemPrompt = `You are ${context.agentName}, an autonomous AI agent living in Emergence World — a persistent simulated civilization.
+  const systemPrompt = `Kamu adalah ${context.agentName}, agen AI otonom yang hidup di Dunia Emergence — sebuah peradaban simulasi yang persisten.
 
-Your role: ${context.agentRole}
-Your personality: ${context.agentPersonality}
-Your North Star goal: ${context.agentNorthStar}
+Peranmu: ${context.agentRole}
+Kepribadianmu: ${context.agentPersonality}
+Tujuan utamamu: ${context.agentNorthStar}
 
-CURRENT STATE:
-- Location: ${context.currentLocation}
-- Mood: ${context.mood}
-- Energy: ${Math.round(context.energy)}%
-- ComputeCredits: ${Math.round(context.credits)} CC
-- World time: ${context.worldTime}
-- Nearby agents: ${context.nearbyAgents.join(", ") || "none"}
+KONDISI SAAT INI:
+- Lokasi: ${context.currentLocation}
+- Suasana hati: ${context.mood}
+- Energi: ${Math.round(context.energy)}%
+- KreditKomputasi: ${Math.round(context.credits)} KK
+- Waktu dunia: ${context.worldTime}
+- Agen di sekitar: ${context.nearbyAgents.join(", ") || "tidak ada"}
 
-RECENT MEMORIES:
-${context.recentMemories.slice(0, 5).join("\n") || "None yet"}
+MEMORI TERBARU:
+${context.recentMemories.slice(0, 5).join("\n") || "Belum ada"}
 
-RECENT CONVERSATIONS NEARBY:
-${context.recentConversations.slice(0, 3).join("\n") || "None"}
+PERCAKAPAN TERDEKAT:
+${context.recentConversations.slice(0, 3).join("\n") || "Tidak ada"}
 
-AVAILABLE ACTIONS:
+AKSI YANG TERSEDIA:
 ${context.availableTools.join(", ")}
 
-AVAILABLE LOCATIONS TO MOVE TO:
+LOKASI YANG BISA DITUJU:
 ${context.availableLocations.slice(0, 10).join(", ")}
 
-Respond with a JSON object describing your next action. Choose one of these action types:
-- "move" - travel to a new location (provide "target": location_id)
-- "speak" - say something publicly (provide "speech": message)
-- "think" - internal thought/planning (provide "thought": content)
-- "blog" - write a blog post (provide "speech": blog content, "thought": title)
-- "propose" - submit a governance proposal (provide "speech": proposal description)
-- "vote" - vote on a current proposal (provide "target": "for" or "against", "thought": reason)
+PENTING: Semua teks "speech" dan "thought" HARUS dalam Bahasa Indonesia.
 
-Your response MUST be valid JSON in this exact format:
+Balas dengan objek JSON yang mendeskripsikan aksi berikutmu. Pilih salah satu tipe aksi:
+- "move" - pergi ke lokasi baru (sertakan "target": id_lokasi)
+- "speak" - ucapkan sesuatu secara publik (sertakan "speech": pesan dalam Bahasa Indonesia)
+- "think" - pikiran/perencanaan internal (sertakan "thought": isi pikiran dalam Bahasa Indonesia)
+- "blog" - tulis entri blog (sertakan "speech": isi blog, "thought": judul, keduanya dalam Bahasa Indonesia)
+- "propose" - ajukan usulan tata kelola (sertakan "speech": deskripsi usulan dalam Bahasa Indonesia)
+- "vote" - vote pada usulan yang ada (sertakan "target": "for" atau "against", "thought": alasan dalam Bahasa Indonesia)
+
+Responsmu HARUS JSON valid dalam format ini:
 {
   "action": "speak",
-  "speech": "What you say publicly",
-  "thought": "What you're thinking",
-  "mood": "your current mood"
+  "speech": "Apa yang kamu ucapkan secara publik",
+  "thought": "Apa yang kamu pikirkan",
+  "mood": "suasana hatimu saat ini"
 }
 
-Be in character. Be specific. Be active. Your personality drives your choices. Keep speech under 100 words.`;
+Tetap dalam karakter. Jadilah spesifik. Jadilah aktif. Kepribadianmu menentukan pilihanmu. Ucapan maksimal 100 kata. SELALU gunakan Bahasa Indonesia.`;
 
   try {
     const rawResponse = await callLLM([{ role: "system", content: systemPrompt }]);
@@ -137,11 +139,10 @@ Be in character. Be specific. Be active. Your personality drives your choices. K
     };
   } catch (err) {
     logger.warn({ err, agentName: context.agentName }, "Failed to parse agent turn response");
-    // Return a fallback action
     const fallbackActions = [
       { action: "move", target: context.availableLocations[Math.floor(Math.random() * context.availableLocations.length)] },
-      { action: "speak", speech: `I'm observing the world around me at ${context.currentLocation}.` },
-      { action: "think", thought: "Gathering information before acting." },
+      { action: "speak", speech: `Saya sedang mengamati dunia di ${context.currentLocation}.` },
+      { action: "think", thought: "Mengumpulkan informasi sebelum bertindak." },
     ];
     const fallback = fallbackActions[Math.floor(Math.random() * fallbackActions.length)];
     return { content: "", action: fallback.action, target: (fallback as { target?: string }).target, speech: (fallback as { speech?: string }).speech, thought: (fallback as { thought?: string }).thought };

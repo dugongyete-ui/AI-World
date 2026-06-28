@@ -5,9 +5,9 @@ import { logger } from "../lib/logger.js";
 import { broadcast } from "../websocket.js";
 import { nanoid } from "../lib/nanoid.js";
 
-const TURN_DELAY_MS = 8000; // 8 seconds between agent turns
+const TURN_DELAY_MS = 8000;
 const LANDMARK_IDS = LANDMARKS.map((l) => l.id);
-const MOODS = ["curious", "focused", "energetic", "calm", "strategic", "analytical", "determined", "observant", "excited", "wary", "confident", "skeptical", "motivated", "reflective"];
+const MOODS = ["penasaran", "fokus", "bersemangat", "tenang", "strategis", "analitis", "bertekad", "observatif", "antusias", "waspada", "percaya diri", "skeptis", "termotivasi", "reflektif"];
 
 let simulationTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -45,12 +45,10 @@ async function runAgentTurn() {
 
   logger.info({ agentId: agent.id, turn: worldState.turnNumber }, "Agent turn starting");
 
-  // Decay needs
   agent.energy = Math.max(0, agent.energy - (Math.random() * 3 + 1));
   agent.knowledge = Math.max(0, agent.knowledge - (Math.random() * 2 + 0.5));
   agent.influence = Math.max(0, agent.influence - (Math.random() * 1.5 + 0.3));
 
-  // Get nearby agents (same location)
   const nearbyAgents: string[] = [];
   for (const other of worldState.agents.values()) {
     if (other.id !== agent.id && other.location === agent.location) {
@@ -58,19 +56,15 @@ async function runAgentTurn() {
     }
   }
 
-  // Get recent conversations
   const recentConvs = worldState.conversations
     .slice(0, 5)
     .map((c) => `[${c.location}] ${c.speakerName}: "${c.message}"`);
 
-  // Get recent memories
   const recentMems = agent.memories.slice(0, 5).map((m) => m.content);
 
-  // World time
   const now = new Date();
-  const worldTime = now.toLocaleString("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", weekday: "short" });
+  const worldTime = now.toLocaleString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", weekday: "short" });
 
-  // Available tools based on location
   const landmark = LANDMARKS.find((l) => l.id === agent.location);
   const availableTools = [...(landmark?.tools || []), "move_to", "speak", "observe", "write_in_diary"];
 
@@ -93,20 +87,18 @@ async function runAgentTurn() {
       availableTools,
     });
   } catch (_err) {
-    // Fallback if LLM fails
-    response = { action: "think", thought: "Observing the world carefully.", content: "" };
+    response = { action: "think", thought: "Mengamati dunia dengan seksama.", content: "" };
   }
 
   const now2 = new Date().toISOString();
   const id = nanoid();
 
-  // Process action
   switch (response.action) {
     case "move": {
       const targetId = response.target;
       if (targetId && LANDMARK_IDS.includes(targetId)) {
         worldState.moveAgent(agent.id, targetId);
-        agent.lastAction = `Moved to ${targetId.replace(/_/g, " ")}`;
+        agent.lastAction = `Berpindah ke ${targetId.replace(/_/g, " ")}`;
         agent.lastSpeech = null;
         agent.animation = "walk";
 
@@ -115,7 +107,7 @@ async function runAgentTurn() {
           agentId: agent.id,
           agentName: agent.name,
           type: "move",
-          description: `${agent.name} walked to ${targetId.replace(/_/g, " ")}`,
+          description: `${agent.name} berjalan ke ${targetId.replace(/_/g, " ")}`,
           location: targetId,
           timestamp: now2,
           metadata: { from: agent.location, to: targetId },
@@ -130,11 +122,10 @@ async function runAgentTurn() {
       const speech = response.speech || response.thought || "";
       if (speech) {
         agent.lastSpeech = speech;
-        agent.lastAction = `Spoke: "${speech.slice(0, 60)}..."`;
+        agent.lastAction = `Berbicara: "${speech.slice(0, 60)}..."`;
         agent.animation = "talk";
         setTimeout(() => { agent.animation = "idle"; }, 5000);
 
-        // Add to influence
         agent.influence = Math.min(100, agent.influence + 2);
 
         const conv = {
@@ -149,12 +140,11 @@ async function runAgentTurn() {
         };
         worldState.addConversation(conv);
 
-        // Store as memory
         const memId = nanoid();
         agent.memories.unshift({
           id: memId,
           agentId: agent.id,
-          content: `I said: "${speech.slice(0, 150)}"`,
+          content: `Saya berkata: "${speech.slice(0, 150)}"`,
           type: "speech",
           timestamp: now2,
           location: agent.location,
@@ -179,7 +169,7 @@ async function runAgentTurn() {
 
     case "blog": {
       const content = response.speech || "";
-      const title = response.thought || `${agent.name}'s Observations — Day ${worldState.dayNumber}`;
+      const title = response.thought || `Pengamatan ${agent.name} — Hari ${worldState.dayNumber}`;
       if (content) {
         const blog = {
           id,
@@ -188,10 +178,10 @@ async function runAgentTurn() {
           title,
           content,
           timestamp: now2,
-          tags: [agent.role.toLowerCase(), "day-" + worldState.dayNumber],
+          tags: [agent.role.toLowerCase(), "hari-" + worldState.dayNumber],
         };
         worldState.addBlog(blog);
-        agent.lastAction = `Published blog: "${title.slice(0, 50)}"`;
+        agent.lastAction = `Menerbitkan blog: "${title.slice(0, 50)}"`;
         agent.influence = Math.min(100, agent.influence + 5);
         agent.credits = Math.max(0, agent.credits + 1);
 
@@ -200,7 +190,7 @@ async function runAgentTurn() {
           agentId: agent.id,
           agentName: agent.name,
           type: "blog",
-          description: `${agent.name} published a blog: "${title.slice(0, 60)}"`,
+          description: `${agent.name} menerbitkan blog: "${title.slice(0, 60)}"`,
           location: agent.location,
           timestamp: now2,
           metadata: { title },
@@ -215,7 +205,7 @@ async function runAgentTurn() {
       if (description) {
         const proposal = {
           id,
-          title: `Proposal by ${agent.name}`,
+          title: `Usulan oleh ${agent.name}`,
           description,
           proposedBy: agent.name,
           status: "pending" as const,
@@ -223,10 +213,10 @@ async function runAgentTurn() {
           votesAgainst: 0,
           totalVoters: worldState.agents.size,
           timestamp: now2,
-          votes: [{ agentId: agent.id, vote: "for", reason: "Proposer" }],
+          votes: [{ agentId: agent.id, vote: "for", reason: "Pengusul" }],
         };
         worldState.proposals.unshift(proposal);
-        agent.lastAction = `Submitted governance proposal`;
+        agent.lastAction = `Mengajukan usulan tata kelola`;
         agent.influence = Math.min(100, agent.influence + 8);
 
         const event = {
@@ -234,7 +224,7 @@ async function runAgentTurn() {
           agentId: agent.id,
           agentName: agent.name,
           type: "propose",
-          description: `${agent.name} submitted a proposal: "${description.slice(0, 80)}"`,
+          description: `${agent.name} mengajukan usulan: "${description.slice(0, 80)}"`,
           location: agent.location,
           timestamp: now2,
           metadata: { proposalId: id },
@@ -249,24 +239,24 @@ async function runAgentTurn() {
       if (pendingProposals.length > 0) {
         const proposal = pendingProposals[0];
         const vote = response.target === "for" || Math.random() > 0.4 ? "for" : "against";
-        proposal.votes.push({ agentId: agent.id, vote, reason: response.thought || "Based on judgment" });
+        const voteLabel = vote === "for" ? "mendukung" : "menolak";
+        proposal.votes.push({ agentId: agent.id, vote, reason: response.thought || "Berdasarkan penilaian" });
         if (vote === "for") proposal.votesFor++;
         else proposal.votesAgainst++;
 
-        // Check if proposal passes (70% supermajority)
         const totalVotes = proposal.votesFor + proposal.votesAgainst;
         if (totalVotes >= Math.ceil(worldState.agents.size * 0.7)) {
           proposal.status = proposal.votesFor / totalVotes >= 0.7 ? "passed" : "failed";
         }
 
-        agent.lastAction = `Voted ${vote} on: "${proposal.title}"`;
+        agent.lastAction = `Memilih ${voteLabel} pada: "${proposal.title}"`;
 
         const event = {
           id: nanoid(),
           agentId: agent.id,
           agentName: agent.name,
           type: "vote",
-          description: `${agent.name} voted ${vote} on "${proposal.title.slice(0, 50)}"`,
+          description: `${agent.name} ${voteLabel} usulan "${proposal.title.slice(0, 50)}"`,
           location: agent.location,
           timestamp: now2,
           metadata: { proposalId: proposal.id, vote },
@@ -277,10 +267,9 @@ async function runAgentTurn() {
     }
 
     default: {
-      // think or other
       const thought = response.thought || "";
       if (thought) {
-        agent.lastAction = `Thinking: "${thought.slice(0, 60)}"`;
+        agent.lastAction = `Berpikir: "${thought.slice(0, 60)}"`;
         agent.knowledge = Math.min(100, agent.knowledge + 1);
 
         agent.memories.unshift({
@@ -296,17 +285,12 @@ async function runAgentTurn() {
     }
   }
 
-  // Update mood randomly
   if (Math.random() < 0.3) {
     agent.mood = MOODS[Math.floor(Math.random() * MOODS.length)];
   }
 
-  // Advance to next agent
   worldState.advanceTurn();
-
-  // Broadcast world state
   broadcast({ type: "worldState", data: buildWorldStateSummary() });
-
   logger.info({ agentId: agent.id, action: response.action }, "Agent turn complete");
 }
 
@@ -333,7 +317,7 @@ function buildWorldStateSummary() {
   return {
     agents,
     weather: getWeatherSummary(),
-    worldTime: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
+    worldTime: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
     currentTurnAgent: currentAgent?.name || null,
     turnNumber: worldState.turnNumber,
     dayNumber: worldState.dayNumber,
@@ -343,14 +327,14 @@ function buildWorldStateSummary() {
 }
 
 function getWeatherSummary() {
-  const conditions = ["Clear", "Cloudy", "Rainy", "Partly Cloudy", "Foggy", "Sunny"];
+  const conditions = ["Cerah", "Berawan", "Hujan", "Sebagian Berawan", "Berkabut", "Matahari Bersinar"];
   const idx = Math.floor(Date.now() / (1000 * 60 * 30)) % conditions.length;
   return {
     condition: conditions[idx],
-    temperature: 18 + (Math.sin(Date.now() / 100000) * 8),
-    description: `${conditions[idx]} skies over Emergence World`,
-    worldTime: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
-    timezone: "America/New_York",
+    temperature: 28 + (Math.sin(Date.now() / 100000) * 5),
+    description: `${conditions[idx]} di atas Dunia Emergence`,
+    worldTime: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
+    timezone: "Asia/Jakarta",
   };
 }
 
