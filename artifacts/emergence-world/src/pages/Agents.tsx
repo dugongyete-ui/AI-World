@@ -8,14 +8,14 @@ export default function Agents() {
   const { data: agents, isLoading } = useGetAgents();
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Initializing agent data stream...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Memuat data agen...</div>;
   }
 
   return (
     <div className="p-6 h-full flex flex-col">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold font-mono text-primary tracking-tight">AGENT ROSTER</h1>
-        <p className="text-muted-foreground mt-1">Live profiles of the 10 autonomous entities.</p>
+        <h1 className="text-3xl font-bold font-mono text-primary tracking-tight">DAFTAR AGEN</h1>
+        <p className="text-muted-foreground mt-1">Profil langsung 10 entitas otonom.</p>
       </div>
 
       <ScrollArea className="flex-1">
@@ -39,7 +39,7 @@ export default function Agents() {
                 <div className="flex-1 overflow-hidden">
                   <CardTitle className="font-mono text-lg flex items-center justify-between" style={{ color: agent.color }}>
                     {agent.name}
-                    {agent.isCurrentTurn && <Badge variant="default" className="text-[10px] px-1 py-0 h-4">ACTIVE</Badge>}
+                    {agent.isCurrentTurn && <Badge variant="default" className="text-[10px] px-1 py-0 h-4">AKTIF</Badge>}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider truncate">{agent.role}</p>
                 </div>
@@ -64,13 +64,13 @@ export default function Agents() {
                   <div className="pt-2 border-t border-border/50">
                     <div className="text-[10px] uppercase text-muted-foreground mb-1 flex items-center gap-1">
                       <Brain size={10} />
-                      Current State
+                      Kondisi Saat Ini
                     </div>
                     <div className="text-xs font-mono text-foreground/80 truncate">
-                      Mood: <span className="text-accent">{agent.mood}</span>
+                      Suasana: <span className="text-accent">{agent.mood}</span>
                     </div>
                     <div className="text-xs text-muted-foreground truncate mt-1">
-                      {agent.lastAction || "Idle"}
+                      {agent.lastAction || "Diam"}
                     </div>
                   </div>
                 </div>

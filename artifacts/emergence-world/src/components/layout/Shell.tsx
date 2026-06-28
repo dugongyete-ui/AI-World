@@ -12,22 +12,21 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const isRunning = simStatus?.isRunning ?? false;
 
   const navItems = [
-    { href: "/", label: "World View", icon: Globe },
-    { href: "/agents", label: "Agents", icon: Users },
-    { href: "/economy", label: "Economy", icon: Coins },
-    { href: "/governance", label: "Governance", icon: Book },
-    { href: "/blogs", label: "Discourse", icon: Radio },
-    { href: "/metrics", label: "Metrics", icon: BarChart2 },
+    { href: "/", label: "Peta Dunia", icon: Globe },
+    { href: "/agents", label: "Agen", icon: Users },
+    { href: "/economy", label: "Ekonomi", icon: Coins },
+    { href: "/governance", label: "Tata Kelola", icon: Book },
+    { href: "/blogs", label: "Wacana", icon: Radio },
+    { href: "/metrics", label: "Metrik", icon: BarChart2 },
   ];
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden text-foreground">
-      {/* Sidebar */}
       <aside className="w-64 border-r border-border bg-card flex flex-col">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-primary">EMERGENCE</h1>
-            <p className="text-xs text-muted-foreground uppercase tracking-widest">Simulation v0.1</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest">Simulasi v0.1</p>
           </div>
           <div className={`w-2 h-2 rounded-full ${isRunning ? "bg-primary animate-pulse" : "bg-muted"}`} />
         </div>
@@ -53,8 +52,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-border">
           <div className="flex flex-col gap-2">
             <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 flex justify-between">
-              <span>System Status</span>
-              <span>Day {simStatus?.dayNumber ?? 0}</span>
+              <span>Status Sistem</span>
+              <span>Hari {simStatus?.dayNumber ?? 0}</span>
             </div>
             {isRunning ? (
               <Button 
@@ -63,7 +62,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 onClick={() => stopSim.mutate()}
                 disabled={stopSim.isPending}
               >
-                HALT SIMULATION
+                HENTIKAN SIMULASI
               </Button>
             ) : (
               <Button 
@@ -71,14 +70,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 onClick={() => startSim.mutate()}
                 disabled={startSim.isPending}
               >
-                INITIALIZE
+                MULAI
               </Button>
             )}
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 relative flex flex-col overflow-hidden">
         {children}
       </main>

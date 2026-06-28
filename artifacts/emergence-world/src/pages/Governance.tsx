@@ -7,23 +7,29 @@ export default function Governance() {
   const { data: constitution, isLoading: loadingConst } = useGetConstitution();
   const { data: proposals, isLoading: loadingProps } = useGetProposals();
 
-  if (loadingConst || loadingProps) return <div className="p-8 font-mono text-muted-foreground">Loading legal frameworks...</div>;
+  if (loadingConst || loadingProps) return <div className="p-8 font-mono text-muted-foreground">Memuat kerangka hukum...</div>;
+
+  const statusLabel: Record<string, string> = {
+    active: "aktif",
+    passed: "disetujui",
+    rejected: "ditolak",
+  };
 
   return (
     <div className="p-6 h-full flex flex-col max-h-screen overflow-hidden">
       <div className="mb-6 shrink-0">
         <h1 className="text-3xl font-bold font-mono text-primary tracking-tight flex items-center gap-3">
           <Book size={28} />
-          CONSTITUTION & GOVERNANCE
+          KONSTITUSI & TATA KELOLA
         </h1>
-        <p className="text-muted-foreground mt-1">The foundational laws and current legislative proposals.</p>
+        <p className="text-muted-foreground mt-1">Hukum dasar dan usulan legislatif yang sedang berjalan.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
         <Card className="bg-card/50 border-border/50 flex flex-col h-full">
           <CardHeader className="border-b border-border/50 shrink-0 bg-muted/10">
             <CardTitle className="font-mono text-sm tracking-widest text-primary flex justify-between">
-              THE CONSTITUTION
+              KONSTITUSI
               <span className="text-muted-foreground">v{constitution?.version}</span>
             </CardTitle>
           </CardHeader>
@@ -34,7 +40,7 @@ export default function Governance() {
                   <div key={article.number} className="relative">
                     <div className="absolute -left-3 top-0 bottom-0 w-1 bg-primary/20 rounded" />
                     <h3 className="font-mono text-lg font-bold text-foreground mb-2 flex items-center gap-2">
-                      <span className="text-primary text-sm">ARTICLE {article.number}</span>
+                      <span className="text-primary text-sm">PASAL {article.number}</span>
                       {article.title}
                     </h3>
                     <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
@@ -51,7 +57,7 @@ export default function Governance() {
           <CardHeader className="border-b border-border/50 shrink-0 bg-muted/10">
             <CardTitle className="font-mono text-sm tracking-widest text-accent flex items-center gap-2">
               <Gavel size={16} />
-              ACTIVE LEGISLATION
+              LEGISLASI AKTIF
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 flex-1 overflow-hidden">
@@ -67,14 +73,14 @@ export default function Governance() {
                           prop.status === 'passed' ? 'bg-green-500/20 text-green-500 border border-green-500/30' :
                           'bg-destructive/20 text-destructive border border-destructive/30'
                         }`}>
-                          {prop.status}
+                          {statusLabel[prop.status] ?? prop.status}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mb-4">{prop.description}</p>
                       
                       <div className="flex items-center justify-between text-xs font-mono">
                         <div className="text-muted-foreground">
-                          Proposed by: <span className="text-foreground">{prop.proposedBy}</span>
+                          Diusulkan oleh: <span className="text-foreground">{prop.proposedBy}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1 text-green-500">
@@ -95,7 +101,7 @@ export default function Governance() {
                 ))}
                 {proposals?.length === 0 && (
                   <div className="text-center p-8 text-muted-foreground font-mono text-sm">
-                    No active proposals.
+                    Belum ada usulan aktif.
                   </div>
                 )}
               </div>

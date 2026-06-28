@@ -5,6 +5,14 @@ import { useSimulationWebSocket } from "@/hooks/use-websocket";
 const WORLD_SIZE = 240;
 const HALF = WORLD_SIZE / 2;
 
+const CATEGORY_LABELS: Record<string, string> = {
+  commercial:   "komersial",
+  municipal:    "pemerintahan",
+  recreational: "rekreasi",
+  residential:  "hunian",
+  industrial:   "industri",
+};
+
 const CATEGORY_COLORS: Record<string, { fill: string; stroke: string }> = {
   commercial:   { fill: "#0d2233", stroke: "#1a4a6a" },
   municipal:    { fill: "#1a0d2e", stroke: "#4a1a7a" },
@@ -55,48 +63,25 @@ function AgentDot({
   const isCurrent = agent.isCurrentTurn;
 
   return (
-    <g
-      className="cursor-pointer"
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-    >
+    <g className="cursor-pointer" onClick={(e) => { e.stopPropagation(); onClick(); }}>
       {isCurrent && (
-        <circle
-          cx={pos.x}
-          cy={pos.y}
-          r={r + 8}
-          fill="none"
-          stroke={agent.color ?? "#00ffcc"}
-          strokeWidth="1"
-          opacity="0.4"
-        >
+        <circle cx={pos.x} cy={pos.y} r={r + 8} fill="none" stroke={agent.color ?? "#00ffcc"} strokeWidth="1" opacity="0.4">
           <animate attributeName="r" values={`${r + 4};${r + 12};${r + 4}`} dur="2s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite" />
         </circle>
       )}
+      <circle cx={pos.x} cy={pos.y} r={r + 3} fill={agent.color ?? "#00ffcc"} opacity="0.15" />
       <circle
-        cx={pos.x}
-        cy={pos.y}
-        r={r + 3}
-        fill={agent.color ?? "#00ffcc"}
-        opacity="0.15"
-      />
-      <circle
-        cx={pos.x}
-        cy={pos.y}
-        r={r}
+        cx={pos.x} cy={pos.y} r={r}
         fill={agent.color ?? "#00ffcc"}
         stroke={selected ? "#ffffff" : "transparent"}
         strokeWidth={selected ? 1.5 : 0}
         style={{ filter: `drop-shadow(0 0 4px ${agent.color ?? "#00ffcc"})`, transition: "all 0.4s ease" }}
       />
       <text
-        x={pos.x}
-        y={pos.y - r - 4}
-        textAnchor="middle"
-        fontSize="7"
-        fontFamily="monospace"
-        fill={agent.color ?? "#00ffcc"}
-        opacity="0.9"
+        x={pos.x} y={pos.y - r - 4}
+        textAnchor="middle" fontSize="7" fontFamily="monospace"
+        fill={agent.color ?? "#00ffcc"} opacity="0.9"
         style={{ pointerEvents: "none", userSelect: "none" }}
       >
         {agent.name.toUpperCase()}
@@ -114,27 +99,9 @@ function LandmarkBlock({ landmark, viewSize }: { landmark: Landmark; viewSize: n
 
   return (
     <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={w}
-        fill={colors.fill}
-        stroke={colors.stroke}
-        strokeWidth="0.5"
-        rx="1"
-        opacity="0.9"
-      />
+      <rect x={x} y={y} width={w} height={w} fill={colors.fill} stroke={colors.stroke} strokeWidth="0.5" rx="1" opacity="0.9" />
       {h > 6 && (
-        <rect
-          x={x + w * 0.2}
-          y={y + w * 0.2}
-          width={w * 0.6}
-          height={w * 0.6}
-          fill={colors.stroke}
-          opacity="0.2"
-          rx="0.5"
-        />
+        <rect x={x + w * 0.2} y={y + w * 0.2} width={w * 0.6} height={w * 0.6} fill={colors.stroke} opacity="0.2" rx="0.5" />
       )}
     </g>
   );
@@ -144,7 +111,6 @@ function GridLines({ viewSize }: { viewSize: number }) {
   const cells = 20;
   const step = viewSize / cells;
   const lines: React.ReactNode[] = [];
-
   for (let i = 0; i <= cells; i++) {
     const pos = i * step;
     lines.push(
@@ -226,30 +192,15 @@ export function WorldMap() {
           transition: isPanning ? "none" : "transform 0.05s linear",
         }}
       >
-        <svg
-          width={viewSize}
-          height={viewSize}
-          viewBox={`0 0 ${viewSize} ${viewSize}`}
-          style={{ display: "block" }}
-        >
+        <svg width={viewSize} height={viewSize} viewBox={`0 0 ${viewSize} ${viewSize}`} style={{ display: "block" }}>
           <rect width={viewSize} height={viewSize} fill="#030308" />
           <GridLines viewSize={viewSize} />
+          <rect x={1} y={1} width={viewSize - 2} height={viewSize - 2} fill="none" stroke="#00ffcc" strokeWidth="0.5" opacity="0.2" />
 
-          {/* Outer border scan line */}
-          <rect
-            x={1} y={1}
-            width={viewSize - 2} height={viewSize - 2}
-            fill="none"
-            stroke="#00ffcc"
-            strokeWidth="0.5"
-            opacity="0.2"
-          />
-
-          {/* Compass rose */}
-          <text x={viewSize / 2} y={12} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">N</text>
+          <text x={viewSize / 2} y={12} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">U</text>
           <text x={viewSize / 2} y={viewSize - 4} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">S</text>
-          <text x={8} y={viewSize / 2 + 3} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">W</text>
-          <text x={viewSize - 8} y={viewSize / 2 + 3} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">E</text>
+          <text x={8} y={viewSize / 2 + 3} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">B</text>
+          <text x={viewSize - 8} y={viewSize / 2 + 3} textAnchor="middle" fontSize="8" fill="#00ffcc" opacity="0.3" fontFamily="monospace">T</text>
 
           {landmarks?.map((l) => (
             <LandmarkBlock key={l.id} landmark={l} viewSize={viewSize} />
@@ -267,16 +218,16 @@ export function WorldMap() {
         </svg>
       </div>
 
-      {/* HUD: selected agent tooltip */}
       {selectedAgent && (
-        <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-sm border border-white/10 rounded-lg p-3 text-xs font-mono text-white max-w-[220px]"
+        <div
+          className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-sm border rounded-lg p-3 text-xs font-mono text-white max-w-[220px]"
           style={{ borderColor: selectedAgent.color ?? "#00ffcc" }}
         >
           <div className="font-bold mb-1" style={{ color: selectedAgent.color ?? "#00ffcc" }}>
             {selectedAgent.name} — {selectedAgent.role}
           </div>
           <div className="text-white/60">
-            <span className="text-white/40">LOC </span>{selectedAgent.location}
+            <span className="text-white/40">LOK </span>{selectedAgent.location}
           </div>
           {selectedAgent.lastSpeech && (
             <div className="mt-2 text-white/70 italic border-t border-white/10 pt-2">
@@ -284,26 +235,24 @@ export function WorldMap() {
             </div>
           )}
           <div className="mt-2 flex gap-3">
-            <div><span className="text-white/40">NRG </span><span className="text-green-400">{Math.round(selectedAgent.energy)}%</span></div>
-            <div><span className="text-white/40">CR </span><span className="text-yellow-400">{selectedAgent.credits}</span></div>
+            <div><span className="text-white/40">ENR </span><span className="text-green-400">{Math.round(selectedAgent.energy)}%</span></div>
+            <div><span className="text-white/40">KR </span><span className="text-yellow-400">{selectedAgent.credits}</span></div>
             <div><span className="text-white/40">MOOD </span><span>{selectedAgent.mood}</span></div>
           </div>
         </div>
       )}
 
-      {/* Legend */}
       <div className="absolute top-2 right-2 flex flex-col gap-1 text-[9px] font-mono opacity-60">
         {Object.entries(CATEGORY_COLORS).map(([cat, c]) => (
           <div key={cat} className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-sm" style={{ background: c.stroke }} />
-            <span className="text-white/50 uppercase">{cat}</span>
+            <span className="text-white/50 uppercase">{CATEGORY_LABELS[cat] ?? cat}</span>
           </div>
         ))}
       </div>
 
-      {/* Controls hint */}
       <div className="absolute bottom-2 right-2 text-[9px] font-mono text-white/20">
-        scroll to zoom · drag to pan · click agent to inspect
+        scroll untuk zoom · geser untuk navigasi · klik agen untuk inspeksi
       </div>
     </div>
   );

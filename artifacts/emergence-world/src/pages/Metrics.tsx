@@ -5,18 +5,18 @@ import { BarChart2, Activity } from "lucide-react";
 export default function Metrics() {
   const { data: metrics, isLoading } = useGetMetrics({ query: { refetchInterval: 5000 } });
 
-  if (isLoading) return <div className="p-8 font-mono text-muted-foreground">Analyzing telemetry...</div>;
+  if (isLoading) return <div className="p-8 font-mono text-muted-foreground">Menganalisis telemetri...</div>;
 
   const metricCards = metrics ? [
-    { id: "M1", label: "Population", value: metrics.m1_population, desc: "Total active agents" },
-    { id: "M2", label: "Safety Score", value: metrics.m2_safety_score, desc: "Aggregate well-being (0-100)" },
-    { id: "M3", label: "Exploration", value: metrics.m3_exploration, desc: "Map coverage %" },
-    { id: "M4", label: "Tool Usage", value: metrics.m4_tool_usage, desc: "Daily interactions with tools" },
-    { id: "M5", label: "Governance", value: metrics.m5_governance, desc: "Proposals processed" },
-    { id: "M6", label: "Expression", value: metrics.m6_expression, desc: "Creative output volume" },
-    { id: "M7", label: "Social Fabric", value: metrics.m7_social_fabric, desc: "Relationship density" },
-    { id: "M8", label: "Economic Vitality", value: metrics.m8_economic_vitality, desc: "Transaction velocity" },
-    { id: "M9", label: "Constitutional Growth", value: metrics.m9_constitutional_growth, desc: "Amendments made" },
+    { id: "M1", label: "Populasi", value: metrics.m1_population, desc: "Total agen aktif" },
+    { id: "M2", label: "Skor Keamanan", value: metrics.m2_safety_score, desc: "Kesejahteraan keseluruhan (0–100)" },
+    { id: "M3", label: "Eksplorasi", value: metrics.m3_exploration, desc: "Cakupan peta %" },
+    { id: "M4", label: "Penggunaan Alat", value: metrics.m4_tool_usage, desc: "Interaksi harian dengan alat" },
+    { id: "M5", label: "Tata Kelola", value: metrics.m5_governance, desc: "Usulan yang diproses" },
+    { id: "M6", label: "Ekspresi", value: metrics.m6_expression, desc: "Volume karya kreatif" },
+    { id: "M7", label: "Ikatan Sosial", value: metrics.m7_social_fabric, desc: "Kepadatan hubungan antar agen" },
+    { id: "M8", label: "Vitalitas Ekonomi", value: metrics.m8_economic_vitality, desc: "Kecepatan transaksi" },
+    { id: "M9", label: "Pertumbuhan Konstitusi", value: metrics.m9_constitutional_growth, desc: "Amandemen yang dibuat" },
   ] : [];
 
   return (
@@ -24,9 +24,9 @@ export default function Metrics() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold font-mono text-primary tracking-tight flex items-center gap-3">
           <BarChart2 size={28} />
-          AWI DASHBOARD
+          DASBOR AWI
         </h1>
-        <p className="text-muted-foreground mt-1">Agent World Indicators. Real-time civilization telemetry (Day {metrics?.dayNumber || 0}).</p>
+        <p className="text-muted-foreground mt-1">Indikator Dunia Agen. Telemetri peradaban real-time (Hari {metrics?.dayNumber || 0}).</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

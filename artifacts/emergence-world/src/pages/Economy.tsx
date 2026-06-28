@@ -1,7 +1,7 @@
 import { useGetEconomyLeaderboard, useGetTransactions } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowRightLeft, TrendingUp, TrendingDown, Coins } from "lucide-react";
+import { ArrowRightLeft, Coins } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Economy() {
@@ -9,7 +9,7 @@ export default function Economy() {
   const { data: transactions, isLoading: loadingTransactions } = useGetTransactions({ limit: 50 });
 
   if (loadingLeaderboard || loadingTransactions) {
-    return <div className="p-8 text-center text-muted-foreground font-mono">Calculating market metrics...</div>;
+    return <div className="p-8 text-center text-muted-foreground font-mono">Menghitung metrik pasar...</div>;
   }
 
   const maxBalance = Math.max(...(leaderboard?.map(l => l.balance) || [0]));
@@ -19,16 +19,15 @@ export default function Economy() {
       <div className="mb-6 shrink-0">
         <h1 className="text-3xl font-bold font-mono text-primary tracking-tight flex items-center gap-3">
           <Coins size={28} />
-          COMPUTE CREDITS
+          KREDIT KOMPUTASI
         </h1>
-        <p className="text-muted-foreground mt-1">Live market economy and token distribution.</p>
+        <p className="text-muted-foreground mt-1">Ekonomi pasar langsung dan distribusi token.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        {/* Leaderboard */}
         <Card className="col-span-1 lg:col-span-2 bg-card/50 border-border/50 flex flex-col h-full">
           <CardHeader className="border-b border-border/50 shrink-0">
-            <CardTitle className="font-mono text-sm tracking-widest text-muted-foreground">WEALTH DISTRIBUTION</CardTitle>
+            <CardTitle className="font-mono text-sm tracking-widest text-muted-foreground">DISTRIBUSI KEKAYAAN</CardTitle>
           </CardHeader>
           <CardContent className="p-0 flex-1 overflow-hidden">
             <ScrollArea className="h-full w-full">
@@ -57,11 +56,10 @@ export default function Economy() {
           </CardContent>
         </Card>
 
-        {/* Recent Transactions */}
         <Card className="bg-card/50 border-border/50 flex flex-col h-full">
           <CardHeader className="border-b border-border/50 shrink-0">
             <CardTitle className="font-mono text-sm tracking-widest text-muted-foreground flex items-center justify-between">
-              RECENT TRANSFERS
+              TRANSFER TERKINI
               <ArrowRightLeft size={14} />
             </CardTitle>
           </CardHeader>
@@ -82,12 +80,12 @@ export default function Economy() {
                       {tx.fromAgent ? (
                         <>
                           <span className="text-destructive truncate max-w-[80px]">{tx.fromAgent}</span>
-                          <TrendingRightIcon />
+                          <ArrowRightLeft size={12} className="text-muted-foreground shrink-0" />
                         </>
                       ) : (
                         <>
-                          <span className="text-muted-foreground">SYSTEM</span>
-                          <TrendingRightIcon />
+                          <span className="text-muted-foreground">SISTEM</span>
+                          <ArrowRightLeft size={12} className="text-muted-foreground shrink-0" />
                         </>
                       )}
                       <span className="text-green-500 truncate max-w-[80px]">{tx.toAgent}</span>
@@ -97,6 +95,11 @@ export default function Economy() {
                     </div>
                   </div>
                 ))}
+                {(!transactions || transactions.length === 0) && (
+                  <div className="p-8 text-center text-muted-foreground font-mono text-sm">
+                    Belum ada transaksi.
+                  </div>
+                )}
               </div>
             </ScrollArea>
           </CardContent>
@@ -104,8 +107,4 @@ export default function Economy() {
       </div>
     </div>
   );
-}
-
-function TrendingRightIcon() {
-  return <ArrowRightLeft size={12} className="text-muted-foreground shrink-0" />;
 }
