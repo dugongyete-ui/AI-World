@@ -18,3 +18,10 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+AI_API_BASE_URL = "https://chat-gateway-v-2--ngaylge.replit.app/v1"
+AI_API_KEY = "sk-dzcxvzJ4sJTwP--GROn7h2qY3AeibvcM_S_NA9k43L5buz6V"
+AI_MODEL = "kimi-k2"

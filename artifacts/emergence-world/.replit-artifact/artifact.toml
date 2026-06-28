@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Emergence World"
+version = "1.0.0"
+id = "artifacts/emergence-world"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22529
+
+[services.development]
+run = "pnpm --filter @workspace/emergence-world run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/emergence-world", "run", "build" ]
+publicDir = "artifacts/emergence-world/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22529"
+BASE_PATH = "/"

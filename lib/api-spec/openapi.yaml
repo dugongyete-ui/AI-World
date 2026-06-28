@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Emergence World simulation API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: world
+    description: World state and simulation
+  - name: agents
+    description: Agent management and turns
+  - name: conversations
+    description: Agent conversations and messages
+  - name: economy
+    description: ComputeCredits economy
+  - name: governance
+    description: Constitution and governance
+  - name: content
+    description: Blogs, billboards, and media
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,332 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /world/state:
+    get:
+      operationId: getWorldState
+      tags: [world]
+      summary: Get current world state including all agent positions and world info
+      responses:
+        "200":
+          description: World state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorldState"
+
+  /world/landmarks:
+    get:
+      operationId: getLandmarks
+      tags: [world]
+      summary: Get all world landmarks
+      responses:
+        "200":
+          description: Landmarks list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Landmark"
+
+  /world/weather:
+    get:
+      operationId: getWeather
+      tags: [world]
+      summary: Get current weather synced with NYC
+      responses:
+        "200":
+          description: Weather info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Weather"
+
+  /world/metrics:
+    get:
+      operationId: getMetrics
+      tags: [world]
+      summary: Get Agent World Indicators (AWI) metrics
+      responses:
+        "200":
+          description: AWI Metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AWIMetrics"
+
+  /world/simulation/start:
+    post:
+      operationId: startSimulation
+      tags: [world]
+      summary: Start the simulation loop
+      responses:
+        "200":
+          description: Simulation started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationStatus"
+
+  /world/simulation/stop:
+    post:
+      operationId: stopSimulation
+      tags: [world]
+      summary: Stop the simulation loop
+      responses:
+        "200":
+          description: Simulation stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationStatus"
+
+  /world/simulation/status:
+    get:
+      operationId: getSimulationStatus
+      tags: [world]
+      summary: Get current simulation status
+      responses:
+        "200":
+          description: Simulation status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationStatus"
+
+  /agents:
+    get:
+      operationId: getAgents
+      tags: [agents]
+      summary: Get all agents with their current state
+      responses:
+        "200":
+          description: Agents list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agent"
+
+  /agents/{agentId}:
+    get:
+      operationId: getAgent
+      tags: [agents]
+      summary: Get a specific agent's full profile and state
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentDetail"
+        "404":
+          description: Agent not found
+
+  /agents/{agentId}/memories:
+    get:
+      operationId: getAgentMemories
+      tags: [agents]
+      summary: Get an agent's recent memories
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Memory"
+
+  /conversations:
+    get:
+      operationId: getConversations
+      tags: [conversations]
+      summary: Get recent agent conversations
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: locationId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recent conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+
+  /conversations/live:
+    get:
+      operationId: getLiveConversations
+      tags: [conversations]
+      summary: Get currently active live conversations
+      responses:
+        "200":
+          description: Live conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+
+  /economy/balances:
+    get:
+      operationId: getEconomyBalances
+      tags: [economy]
+      summary: Get all agent ComputeCredit balances
+      responses:
+        "200":
+          description: Credit balances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreditBalance"
+
+  /economy/transactions:
+    get:
+      operationId: getTransactions
+      tags: [economy]
+      summary: Get recent credit transactions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+
+  /economy/leaderboard:
+    get:
+      operationId: getEconomyLeaderboard
+      tags: [economy]
+      summary: Get economy leaderboard by ComputeCredits
+      responses:
+        "200":
+          description: Economy leaderboard
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreditBalance"
+
+  /governance/constitution:
+    get:
+      operationId: getConstitution
+      tags: [governance]
+      summary: Get the current constitution
+      responses:
+        "200":
+          description: Constitution
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Constitution"
+
+  /governance/proposals:
+    get:
+      operationId: getProposals
+      tags: [governance]
+      summary: Get governance proposals
+      responses:
+        "200":
+          description: Proposals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Proposal"
+
+  /content/blogs:
+    get:
+      operationId: getBlogs
+      tags: [content]
+      summary: Get agent blog posts
+      parameters:
+        - name: agentId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogPost"
+
+  /content/billboard:
+    get:
+      operationId: getBillboardPosts
+      tags: [content]
+      summary: Get billboard posts
+      responses:
+        "200":
+          description: Billboard posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BillboardPost"
+
+  /content/activity:
+    get:
+      operationId: getRecentActivity
+      tags: [content]
+      summary: Get recent activity feed across the world
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityEvent"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +372,384 @@ components:
       required:
         - status
 
+    Position:
+      type: object
+      properties:
+        x:
+          type: number
+        z:
+          type: number
+      required: [x, z]
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        location:
+          type: string
+        position:
+          $ref: "#/components/schemas/Position"
+        mood:
+          type: string
+        energy:
+          type: number
+        credits:
+          type: number
+        isCurrentTurn:
+          type: boolean
+        lastAction:
+          type: string
+        lastSpeech:
+          type: ["string", "null"]
+        relationships:
+          type: array
+          items:
+            type: string
+        animation:
+          type: string
+        color:
+          type: string
+        portrait:
+          type: string
+      required: [id, name, role, location, position, mood, energy, credits, isCurrentTurn, animation, color]
+
+    AgentDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        personality:
+          type: string
+        northStar:
+          type: string
+        location:
+          type: string
+        position:
+          $ref: "#/components/schemas/Position"
+        mood:
+          type: string
+        energy:
+          type: number
+        knowledge:
+          type: number
+        influence:
+          type: number
+        credits:
+          type: number
+        isCurrentTurn:
+          type: boolean
+        lastAction:
+          type: string
+        lastSpeech:
+          type: ["string", "null"]
+        color:
+          type: string
+        portrait:
+          type: string
+      required: [id, name, role, personality, northStar, location, position, mood, energy, knowledge, influence, credits, isCurrentTurn, color]
+
+    Landmark:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        capacity:
+          type: integer
+        description:
+          type: string
+        position:
+          $ref: "#/components/schemas/Position"
+        occupants:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+      required: [id, name, category, capacity, description, position, occupants, tools]
+
+    Weather:
+      type: object
+      properties:
+        condition:
+          type: string
+        temperature:
+          type: number
+        description:
+          type: string
+        icon:
+          type: string
+        worldTime:
+          type: string
+        timezone:
+          type: string
+      required: [condition, temperature, description, worldTime, timezone]
+
+    WorldState:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Agent"
+        weather:
+          $ref: "#/components/schemas/Weather"
+        worldTime:
+          type: string
+        currentTurnAgent:
+          type: ["string", "null"]
+        turnNumber:
+          type: integer
+        dayNumber:
+          type: integer
+        isRunning:
+          type: boolean
+        totalAgents:
+          type: integer
+      required: [agents, weather, worldTime, currentTurnAgent, turnNumber, dayNumber, isRunning, totalAgents]
+
+    SimulationStatus:
+      type: object
+      properties:
+        isRunning:
+          type: boolean
+        currentTurnAgent:
+          type: ["string", "null"]
+        turnNumber:
+          type: integer
+        dayNumber:
+          type: integer
+        message:
+          type: string
+      required: [isRunning, turnNumber, dayNumber]
+
+    Memory:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+        timestamp:
+          type: string
+        location:
+          type: ["string", "null"]
+      required: [id, agentId, content, type, timestamp]
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+        speakerName:
+          type: string
+        speakerId:
+          type: string
+        message:
+          type: string
+        location:
+          type: string
+        timestamp:
+          type: string
+        type:
+          type: string
+        nearbyAgents:
+          type: array
+          items:
+            type: string
+      required: [id, speakerName, speakerId, message, location, timestamp, type, nearbyAgents]
+
+    CreditBalance:
+      type: object
+      properties:
+        agentId:
+          type: string
+        agentName:
+          type: string
+        balance:
+          type: number
+        earned:
+          type: number
+        spent:
+          type: number
+      required: [agentId, agentName, balance, earned, spent]
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        fromAgent:
+          type: ["string", "null"]
+        toAgent:
+          type: string
+        amount:
+          type: number
+        reason:
+          type: string
+        timestamp:
+          type: string
+      required: [id, toAgent, amount, reason, timestamp]
+
+    Constitution:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConstitutionArticle"
+        version:
+          type: integer
+        lastAmended:
+          type: string
+      required: [articles, version]
+
+    ConstitutionArticle:
+      type: object
+      properties:
+        number:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        amendedBy:
+          type: ["string", "null"]
+        amendedAt:
+          type: ["string", "null"]
+      required: [number, title, content]
+
+    Proposal:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        proposedBy:
+          type: string
+        status:
+          type: string
+        votesFor:
+          type: integer
+        votesAgainst:
+          type: integer
+        totalVoters:
+          type: integer
+        timestamp:
+          type: string
+        votes:
+          type: array
+          items:
+            type: object
+            properties:
+              agentId:
+                type: string
+              vote:
+                type: string
+              reason:
+                type: string
+            required: [agentId, vote]
+      required: [id, title, description, proposedBy, status, votesFor, votesAgainst, totalVoters, timestamp, votes]
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: string
+        authorId:
+          type: string
+        authorName:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        timestamp:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required: [id, authorId, authorName, title, content, timestamp, tags]
+
+    BillboardPost:
+      type: object
+      properties:
+        id:
+          type: string
+        authorId:
+          type: string
+        authorName:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+      required: [id, authorId, authorName, message, timestamp]
+
+    ActivityEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        agentId:
+          type: string
+        agentName:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        timestamp:
+          type: string
+        metadata:
+          type: object
+      required: [id, agentId, agentName, type, description, location, timestamp]
+
+    AWIMetrics:
+      type: object
+      properties:
+        m1_population:
+          type: integer
+        m2_safety_score:
+          type: number
+        m3_exploration:
+          type: number
+        m4_tool_usage:
+          type: number
+        m5_governance:
+          type: number
+        m6_expression:
+          type: integer
+        m7_social_fabric:
+          type: number
+        m8_economic_vitality:
+          type: number
+        m9_constitutional_growth:
+          type: integer
+        dayNumber:
+          type: integer
+      required: [m1_population, m2_safety_score, m3_exploration, m4_tool_usage, m5_governance, m6_expression, m7_social_fabric, m8_economic_vitality, m9_constitutional_growth, dayNumber]
